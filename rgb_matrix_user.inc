@@ -1,6 +1,5 @@
 RGB_MATRIX_EFFECT(outrun_sunset)
-RGB_MATRIX_EFFECT(game_fps)
-RGB_MATRIX_EFFECT(game_moba)
+
 
 #ifdef RGB_MATRIX_CUSTOM_EFFECT_IMPLS
 #ifndef LED_FLAG_KEYS
@@ -70,81 +69,10 @@ static bool outrun_sunset(effect_params_t* params) {
     rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
   }
 
-  return led_max < DRIVER_LED_TOTAL;
+  return rgb_matrix_check_finished_leds(led_max);
 }
 
-// First-person shooter mode. Lights up WASD keys
-static bool game_fps(effect_params_t* params) {
-  RGB_MATRIX_USE_LIMITS(led_min, led_max);
 
-  HSV bg_hsv = rgb_matrix_config.hsv;
 
-  HSV wasd_hsv = rgb_matrix_config.hsv;
-  wasd_hsv.h += rgb_matrix_config.speed;
-  RGB wasd_rgb = hsv_to_rgb(wasd_hsv);
-
-  // Blank out the colors on initialization.
-  if (params->init) {
-    rgb_matrix_set_color_all(0, 0, 0);
-  }
-
-  for (uint8_t i = led_min; i < led_max; i++) {
-    RGB_MATRIX_TEST_LED_FLAGS();
-
-    // Dim background by 50% to make WASD keys stand out more
-    if (HAS_ANY_FLAGS(g_led_config.flags[i], LED_FLAG_KEYS)) {
-      bg_hsv.v = rgb_matrix_config.hsv.v / 2;
-    } else {
-      bg_hsv.v = rgb_matrix_config.hsv.v;
-    }
-
-    RGB bg_rgb = hsv_to_rgb(bg_hsv);
-    rgb_matrix_set_color(i, bg_rgb.r, bg_rgb.g, bg_rgb.b);
-
-    // Indices: 17, 31, 32, 33 = W, A, S, D on Drop ALT
-    // See: config_led.c
-    if (i == 17 || (i >= 31 && i < 34)) {
-      rgb_matrix_set_color(i, wasd_rgb.r, wasd_rgb.g, wasd_rgb.b);
-    }
-  }
-
-  return led_max < DRIVER_LED_TOTAL;
-}
-
-// MOBA mode (LoL, HotS). Lights up QWERDF keys.
-static bool game_moba(effect_params_t* params) {
-  RGB_MATRIX_USE_LIMITS(led_min, led_max);
-
-  HSV bg_hsv = rgb_matrix_config.hsv;
-  HSV ability_hsv = rgb_matrix_config.hsv;
-  ability_hsv.h += rgb_matrix_config.speed;
-  RGB ability_rgb = hsv_to_rgb(ability_hsv);
-
-  // Blank out the colors on initialization.
-  if (params->init) {
-    rgb_matrix_set_color_all(0, 0, 0);
-  }
-
-  for (uint8_t i = led_min; i < led_max; i++) {
-    RGB_MATRIX_TEST_LED_FLAGS();
-
-    // Dim background by 50% to make the action keys stand out more
-    if (HAS_ANY_FLAGS(g_led_config.flags[i], LED_FLAG_KEYS)) {
-      bg_hsv.v = rgb_matrix_config.hsv.v / 2;
-    } else {
-      bg_hsv.v = rgb_matrix_config.hsv.v;
-    }
-
-    RGB bg_rgb = hsv_to_rgb(bg_hsv);
-    rgb_matrix_set_color(i, bg_rgb.r, bg_rgb.g, bg_rgb.b);
-
-    // QWERDF keys
-    if ((i >= 16 && i < 20) || (i >= 33 && i < 35)) {
-      rgb_matrix_set_color(i, ability_rgb.r, ability_rgb.g, ability_rgb.b);
-    }
-  }
-
-  return led_max < DRIVER_LED_TOTAL;
-}
 
 #endif // RGB_MATRIX_CUSTOM_EFFECT_IMPLS
