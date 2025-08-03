@@ -1,5 +1,11 @@
 #include QMK_KEYBOARD_H
 
+// Custom keycodes for theme switching
+enum custom_keycodes {
+    THEME_OUTRUN = SAFE_RANGE,
+    THEME_PHOSPHOR
+};
+
 keymap_config_t keymap_config;
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -13,7 +19,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [1] = LAYOUT_65_ansi_blocker(
         KC_GRV, KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, KC_F11, KC_F12, _______, KC_MUTE,
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_PSCR, KC_SCRL, KC_PAUS, _______, KC_END,
-        KC_CAPS, RGB_RMOD, _______, RGB_MOD, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_VOLU,
+        KC_CAPS, RGB_RMOD, THEME_OUTRUN, RGB_MOD, THEME_PHOSPHOR, _______, _______, _______, _______, _______, _______, _______, _______, KC_VOLU,
         _______, _______, _______, _______, _______, QK_BOOT, NK_TOGG, _______, _______, _______, _______, _______, KC_PGUP, KC_VOLD,
         _______, AG_LSWP, AG_LNRM, KC_MPLY, _______, _______, KC_HOME, KC_PGDN, KC_END),
     
@@ -41,5 +47,17 @@ void matrix_scan_user(void){};
 #define MODS_ALT (get_mods() & MOD_BIT(KC_LALT) || get_mods() & MOD_BIT(KC_RALT))
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case THEME_OUTRUN:
+            if (record->event.pressed) {
+                rgb_matrix_mode(RGB_MATRIX_CUSTOM_outrun_sunset);
+            }
+            return false;
+        case THEME_PHOSPHOR:
+            if (record->event.pressed) {
+                rgb_matrix_mode(RGB_MATRIX_CUSTOM_orange_phosphor);
+            }
+            return false;
+    }
     return true; // Process all other keycodes normally
 }
