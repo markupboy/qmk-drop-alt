@@ -6,7 +6,7 @@ This is a custom QMK keymap and lighting firmware for Drop ALT keyboards.
 
 - Clone the (`qmk_firmware`)[https://github.com/qmk/qmk_firmware] locally.
 
-  `git clone --recurse-submodules git clone --recurse-submodules git@github.com:qmk/qmk_firmware.git`
+  `git clone --recurse-submodules git@github.com:qmk/qmk_firmware.git`
 
 - Check out the 0.26.11 tag
 
