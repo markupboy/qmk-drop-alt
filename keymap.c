@@ -1,12 +1,23 @@
 #include QMK_KEYBOARD_H
 
-// Custom keycodes for theme switching
+// Custom keycodes for theme switching, hue, brightness, and saturation adjustment
 enum custom_keycodes {
     THEME_OUTRUN = SAFE_RANGE,
-    THEME_PHOSPHOR
+    THEME_PHOSPHOR,
+    HUE_INC,
+    HUE_DEC,
+    BRIGHT_INC,
+    BRIGHT_DEC,
+    SAT_INC,
+    SAT_DEC
 };
 
 keymap_config_t keymap_config;
+
+// Global variables for adjustable hue, brightness, and saturation
+uint8_t custom_hue = 30;        // Default orange hue
+uint8_t custom_brightness = 230; // Default brightness
+uint8_t custom_saturation = 255; // Default full saturation
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [0] = LAYOUT_65_ansi_blocker(
@@ -18,8 +29,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     
     [1] = LAYOUT_65_ansi_blocker(
         KC_GRV, KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, KC_F11, KC_F12, _______, KC_MUTE,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_PSCR, KC_SCRL, KC_PAUS, _______, KC_END,
-        KC_CAPS, RGB_RMOD, THEME_OUTRUN, RGB_MOD, THEME_PHOSPHOR, _______, _______, _______, _______, _______, _______, _______, _______, KC_VOLU,
+        _______, _______, _______, _______, _______, HUE_INC, SAT_INC, BRIGHT_INC, _______, _______, KC_PSCR, KC_SCRL, KC_PAUS, _______, KC_END,
+        KC_CAPS, RGB_RMOD, THEME_OUTRUN, RGB_MOD, THEME_PHOSPHOR, HUE_DEC, SAT_DEC, BRIGHT_DEC, _______, _______, _______, _______, _______, KC_VOLU,
         _______, _______, _______, _______, _______, QK_BOOT, NK_TOGG, _______, _______, _______, _______, _______, KC_PGUP, KC_VOLD,
         _______, AG_LNRM, AG_LSWP, KC_MPLY, _______, _______, KC_HOME, KC_PGDN, KC_END),
     
@@ -56,6 +67,52 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case THEME_PHOSPHOR:
             if (record->event.pressed) {
                 rgb_matrix_mode(RGB_MATRIX_CUSTOM_orange_phosphor);
+            }
+            return false;
+        case HUE_INC:
+            if (record->event.pressed) {
+                custom_hue = (custom_hue + 5) % 255;  // Increase hue by 5, wrap at 255
+            }
+            return false;
+        case HUE_DEC:
+            if (record->event.pressed) {
+                custom_hue = (custom_hue - 5 + 255) % 255;  // Decrease hue by 5, wrap at 0
+            }
+            return false;
+        case BRIGHT_INC:
+            if (record->event.pressed) {
+                if (custom_brightness <= 240) {
+                    custom_brightness += 15;  // Increase brightness by 15
+                } else {
+                    custom_brightness = 255;  // Cap at maximum
+                }
+            }
+            return false;
+        case BRIGHT_DEC:
+            if (record->event.pressed) {
+                if (custom_brightness >= 25) {
+                    custom_brightness -= 15;  // Decrease brightness by 15
+                } else {
+                    custom_brightness = 10;   // Minimum usable brightness
+                }
+            }
+            return false;
+        case SAT_INC:
+            if (record->event.pressed) {
+                if (custom_saturation <= 240) {
+                    custom_saturation += 15;  // Increase saturation by 15
+                } else {
+                    custom_saturation = 255;  // Cap at maximum
+                }
+            }
+            return false;
+        case SAT_DEC:
+            if (record->event.pressed) {
+                if (custom_saturation >= 25) {
+                    custom_saturation -= 15;  // Decrease saturation by 15
+                } else {
+                    custom_saturation = 10;   // Minimum usable saturation
+                }
             }
             return false;
     }
