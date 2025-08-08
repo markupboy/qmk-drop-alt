@@ -1,7 +1,6 @@
 RGB_MATRIX_EFFECT(outrun_sunset)
 RGB_MATRIX_EFFECT(orange_phosphor)
 
-
 #ifdef RGB_MATRIX_CUSTOM_EFFECT_IMPLS
 #ifndef LED_FLAG_KEYS
 #define LED_FLAG_KEYS (LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER)
@@ -81,9 +80,9 @@ static bool orange_phosphor(effect_params_t* params) {
     rgb_matrix_set_color_all(0, 0, 0);
   }
 
-  // Orange phosphor CRT colors - orange gradient for border
-  HSV border_start_hsv = { 25, 255, 200 };  // Deep orange
-  HSV border_end_hsv = { 25, 255, 255 };    // Bright orange/amber
+  // Orange phosphor CRT colors - adjusted to be more orange, less pink
+  HSV border_start_hsv = { 20, 213, 160 };  // More orange hue for darker border
+  HSV border_end_hsv = { 20, 213, 207 };    // More orange hue for brighter border
 
   for (uint8_t i = led_min; i < led_max; i++) {
     RGB_MATRIX_TEST_LED_FLAGS();
@@ -95,20 +94,20 @@ static bool orange_phosphor(effect_params_t* params) {
     uint8_t led_y = g_led_config.point[i].y;
     
     // Calculate brightness based on Y position
-    // Top (y=0) = 100% brightness, Bottom (y=64) = 25% brightness
-    float brightness_factor = 1.0f - (0.75f * (led_y / 64.0f));
+    // Top (y=0) = 100% brightness, Bottom (y=64) = 40% brightness (increased from 25%)
+    float brightness_factor = 1.0f - (0.60f * (led_y / 64.0f));
     
-    // Set orange phosphor color for all keys
-    hsv.h = 25;                             // Orange/amber hue
-    hsv.s = 0.95f * hsv.s;                  // High saturation
-    hsv.v = brightness_factor * hsv.v;       // Gradient brightness
+    // Set orange phosphor color for all keys - adjusted to be more orange, less pink
+    hsv.h = 15;                             // More orange hue (shifted from 8 to 15)
+    hsv.s = 213;                            // Keep same saturation
+    hsv.v = brightness_factor * 207;        // Keep same brightness range
 
     RGB rgb;
 
     if (HAS_FLAGS(g_led_config.flags[i], LED_FLAG_UNDERGLOW)) {
-      // Orange border gradient for underglow (darkened by 30%)
-      border_start_hsv.v = 0.56f * rgb_matrix_config.hsv.v;  // 0.80 * 0.70 = 0.56
-      border_end_hsv.v = 0.70f * rgb_matrix_config.hsv.v;    // 1.0 * 0.70 = 0.70
+      // Orange border gradient for underglow - using RGB(207, 103, 87) tones
+      border_start_hsv.v = 0.80f * 207;  // 80% of RGB(207, 103, 87) brightness
+      border_end_hsv.v = 1.0f * 207;     // Full RGB(207, 103, 87) brightness
       RGB border_start_color = hsv_to_rgb(border_start_hsv);
       RGB border_end_color = hsv_to_rgb(border_end_hsv);
 
