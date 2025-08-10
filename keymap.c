@@ -143,3 +143,52 @@ void dance_ctrl_caps_reset(tap_dance_state_t *state, void *user_data) {
 tap_dance_action_t tap_dance_actions[] = {
     [CTRL_CAPS] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, dance_ctrl_caps_finished, dance_ctrl_caps_reset)
 };
+
+// Helper function to get LED index from matrix position
+uint8_t get_led_index(uint8_t row, uint8_t col) {
+    if (row >= MATRIX_ROWS || col >= MATRIX_COLS) {
+        return NO_LED;
+    }
+    return g_led_config.matrix_co[row][col];
+}
+
+// Function to check if a keycode is not KC_TRNS (transparent)
+bool is_key_bound(uint16_t keycode) {
+    return keycode != KC_TRNS && keycode != KC_NO;
+}
+
+// RGB Matrix indicators for layer highlighting
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    uint8_t current_layer = get_highest_layer(layer_state);
+    
+    // Only highlight on layers 1 and 2
+    if (current_layer == 1 || current_layer == 2) {
+        // First dim all LEDs
+        for (uint8_t i = led_min; i < led_max; i++) {
+            // Only dim key LEDs, not underglow
+            if (HAS_FLAGS(g_led_config.flags[i], (LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER))) {
+                rgb_matrix_set_color(i, 0, 0, 0);  // Turn off
+            }
+        }
+        
+        // Then light up bound keys
+        for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
+            for (uint8_t col = 0; col < MATRIX_COLS; col++) {
+                uint16_t keycode = keymap_key_to_keycode(current_layer, (keypos_t){col, row});
+                if (is_key_bound(keycode)) {
+                    uint8_t led_index = get_led_index(row, col);
+                    if (led_index != NO_LED && led_index >= led_min && led_index < led_max) {
+                        // Light up bound keys with a bright color
+                        if (current_layer == 1) {
+                            rgb_matrix_set_color(led_index, 0, 255, 255);  // Cyan for layer 1
+                        } else if (current_layer == 2) {
+                            rgb_matrix_set_color(led_index, 255, 0, 255);  // Magenta for layer 2
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return true;
+}
