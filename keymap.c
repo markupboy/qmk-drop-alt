@@ -157,17 +157,37 @@ bool is_key_bound(uint16_t keycode) {
     return keycode != KC_TRNS && keycode != KC_NO;
 }
 
-// RGB Matrix indicators for layer highlighting
+// RGB Matrix indicators for layer highlighting and caps lock
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     uint8_t current_layer = get_highest_layer(layer_state);
     
+    // Check if caps lock is active
+    bool caps_lock_on = host_keyboard_led_state().caps_lock;
+    
+    // Caps lock border effect - bright red border when caps lock is on
+    if (caps_lock_on) {
+        for (uint8_t i = led_min; i < led_max; i++) {
+            // Set all underglow LEDs to bright red for border effect
+            if (HAS_FLAGS(g_led_config.flags[i], LED_FLAG_UNDERGLOW)) {
+                rgb_matrix_set_color(i, 255, 0, 0);  // Bright red
+            }
+        }
+    }
+    
     // Only highlight on layers 1 and 2
     if (current_layer == 1 || current_layer == 2) {
-        // First dim all LEDs
+        // First dim all key LEDs and set underglow to layer color (unless caps lock overrides)
         for (uint8_t i = led_min; i < led_max; i++) {
-            // Only dim key LEDs, not underglow
             if (HAS_FLAGS(g_led_config.flags[i], (LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER))) {
+                // Dim key LEDs
                 rgb_matrix_set_color(i, 0, 0, 0);  // Turn off
+            } else if (HAS_FLAGS(g_led_config.flags[i], LED_FLAG_UNDERGLOW) && !caps_lock_on) {
+                // Set underglow border to layer color (caps lock takes priority)
+                if (current_layer == 1) {
+                    rgb_matrix_set_color(i, 0, 255, 255);  // Cyan border for layer 1
+                } else if (current_layer == 2) {
+                    rgb_matrix_set_color(i, 255, 0, 255);  // Magenta border for layer 2
+                }
             }
         }
         
